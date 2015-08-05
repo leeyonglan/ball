@@ -23,6 +23,7 @@ package
 	{
 		
 		protected var _mapLayer:Sprite = null;
+		protected var _staticLayer:Sprite = null;
 		protected var _npcLayer:Sprite = null;
 		protected var _playerLayer:CJPlayerSceneLayer = null;
 		protected var _rankLayer:Sprite = null;
@@ -83,7 +84,7 @@ package
 					lineTo(j*_w,_hn*_w);
 				}
 			}
-			this._mapLayer.addChildAt(s,0);
+			this._staticLayer.addChildAt(s,0);
 		}
 		
 		/**
@@ -93,7 +94,8 @@ package
 		private function _init():void
 		{
 			_mapLayer = new Sprite;
-			with(_mapLayer.graphics)
+			_staticLayer = new Sprite;
+			with(_staticLayer.graphics)
 			{
 				beginFill(0xffffff,0.1)
 				drawRect(0,0,_wn*_w,_hn*_w)
@@ -102,25 +104,19 @@ package
 			
 			_mapLayer.mouseChildren = false;
 			_mapLayer.addEventListener(MouseEvent.CLICK,_touchHandler);
-
 			
-			_carmera = new SCamera(_mapLayer);
-			_carmera.mouseChildren = false;
-			this.addChild(_carmera);
-
 			this.addChild(_mapLayer);
 			
-			_carmera.maxx = this._mapLayer.width - this.stage.stageWidth;
-			_carmera.maxy = this._mapLayer.height - this.stage.stageHeight;
+			_mapLayer.addChild(_staticLayer);
 			
 			_npcLayer = new Sprite;
-			_mapLayer.addChild(_npcLayer);
+			_staticLayer.addChild(_npcLayer);
 			
 			_playerLayer = new CJPlayerSceneLayer();
-			_mapLayer.addChild(_playerLayer);
+			this.addChild(_playerLayer);
 			
 			_rankLayer = new Sprite;
-			_mapLayer.addChild(_rankLayer);
+			this.addChild(_rankLayer);
 			
 			
 			for(var i:int=0;i<10;i++)
@@ -213,19 +209,55 @@ package
 			_initOtherPlayers();
 			
 			_sceneplayermanager.addRole(_role,originalPos.x,originalPos.y);
+			
+			var disx:Number = originalPos.x - this.stage.stageWidth/2;
+			var disy:Number = originalPos.y - this.stage.stageHeight/2;
+			
+			tweenMapLayer(-disx,-disy);
+			_role.bname = "wwww";
 			_role.x = originalPos.x;
 			_role.y = originalPos.y
-			_role.radius = balldata.currentexp;
+			_role.radius = 20;//balldata.currentexp;
 			_role.score = int(balldata.currentexp);
 			//初始化npc
 			this._initNpc();
 			
-			var screenmidx:Number = this.stage.stageWidth>>1
-			var screenmidy:Number = this.stage.stageHeight>>1
-			
-			this.mapLayer.x -= originalPos.x - screenmidx
-			this.mapLayer.y -= originalPos.y - screenmidy
+//			var screenmidx:Number = this.stage.stageWidth>>1
+//			var screenmidy:Number = this.stage.stageHeight>>1
+//			
+//			this.mapLayer.x -= originalPos.x - screenmidx
+//			this.mapLayer.y -= originalPos.y - screenmidy
 				
+		}
+		
+		private function tweenMapLayer(detax:Number,detay:Number):void
+		{
+			var detaPoint:Point = this.getLayerDetaPoint(this,detax,detay);
+			detax = detaPoint.x;
+			detay = detaPoint.y;
+			var distance:Number = Math.sqrt(detax*detax + detay*detay)
+			var time:Number = distance/1000;
+			TweenMax.to(this,time,{x:String(detax),y:String(detay),onComplete:null})
+		}
+		private function getLayerDetaPoint(layer:Sprite,detax:Number,detay:Number):Point
+		{
+			if(layer.x + detax >=0)
+			{
+				detax = -layer.x;
+			}
+			if(layer.x + detax <= -(layer.width - this.stage.stageWidth))
+			{
+				detax = -(layer.width - this.stage.stageWidth) - layer.x
+			}
+			if(layer.y + detay>=0)
+			{
+				detay = -layer.y
+			}
+			if(layer.y + detax <= -(layer.height - this.stage.stageHeight))
+			{
+				detay = -(layer.height - this.stage.stageHeight) - layer.y
+			}
+			return new Point(detax,detay);
 		}
 		/**
 		 * 检测碰撞
@@ -351,12 +383,12 @@ package
 
 		protected function _touchHandler(e:MouseEvent):void
 		{
-			var destX:Number = -(e.localX - _role.x);
-			var destY:Number = -(e.localY - _role.y);
-			
-			var distance:Number = Math.sqrt(destX*destX + destY*destY);
+			var destX:Number = -(e.stageX - (this.stage.stageWidth>>1));
+			var destY:Number = -(e.stageY - (this.stage.stageHeight>>1));
+			var detaPoint:Point = this.getLayerDetaPoint(this._mapLayer,destX,destY);
+			var distance:Number = Math.sqrt(detaPoint.x*detaPoint.x + detaPoint.y*detaPoint.y);
 			var time:Number = distance/_role.speed;
-			TweenMax.to(this._mapLayer,time,{x:String(destX),y:String(destY)})
+			TweenMax.to(this._mapLayer,time,{x:String(detaPoint.x),y:String(detaPoint.y)})
 				
 //			TweenMax.to(this._mapLayer,time,{x:10,y:20})
 				

@@ -97,7 +97,7 @@ package
 		}
 		public function set bname(n:String):void
 		{
-			this._nameText = n;
+			this._name.text = n;
 		}
 		public function get bname():String
 		{
