@@ -72,7 +72,6 @@ package
 				return;
 			}
 			_isActive = true;
-			
 			SocketManager.o.addEventListener(SocketManager.MESSAGERECEIVE,_onSocketPlayerAppear);
 			SocketManager.o.addEventListener(SocketManager.MESSAGERECEIVE,_onSocketPlayerDisAppear);
 			SocketManager.o.addEventListener(SocketManager.MESSAGERECEIVE,_onSocketPlayerMoveTo);
@@ -204,6 +203,7 @@ package
 				_currentPlayersCount ++;
 				
 				var player:Ball = new Ball(id);
+				player.isplayer = true;
 				player.name = "PC_" + id;
 				player.bname = name;
 				
@@ -228,7 +228,7 @@ package
 				
 				_playerLayer.addChild(p);
 				p.name = "PC_" + p.id;
-				p.x = originalPos.x; 
+				p.x = originalPos.x;
 				p.y = originalPos.y;
 				CJPlayerDataManager.o().update(String(id),p.x,p.y);
 			}
@@ -254,10 +254,7 @@ package
 			{
 				_currentPlayersCount --;
 				var removeBall:Ball = (_dictOfOtherPlayers[uid] as Ball)
-				removeBall.visible = false;
-//				removeBall.dispose();
-//				removeBall.removeFromParent(true);
-//				_playerLayer.removeChild(removeBall,true);
+				_playerLayer.removeChild(removeBall);
 				delete _dictOfOtherPlayers[uid];
 			}
 		}

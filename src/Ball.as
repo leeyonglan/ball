@@ -1,27 +1,37 @@
 package
 {
-	import flash.display.BitmapData;
 	import flash.display.Graphics;
 	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.text.TextField;
 	
-	import gs.TweenMax;
-	
-	public class Ball extends Sprite
+	public class Ball extends Sprite implements Ienterframe
 	{
-		private var _r:Number = 5;
+		private var _r:Number = 10;
 		private var _id:String;
 		private var _name:TextField;
 		private var _nameText:String;
 		private var _speed:Number = 50;
 		private var _score:int = 0;
 		private var _graphic:Graphics;
+		private var _mx:Number;
+		private var _my:Number;
+		private var _isplayer:Boolean = false;
 		public function Ball(id:String)
 		{
 			super();
+			this.addEventListener(Event.ADDED,function(e:Event):void
+			{
+				dispatchEvent(new Event("balladded",true));
+			});
+			this.addEventListener(Event.REMOVED,function(e:Event):void
+			{
+				dispatchEvent(new Event("ballremoved",true));
+			});
 			_id = id;
 			initialize();
+			this.cacheAsBitmap = true;
 		}
 		private function initialize():void
 		{
@@ -35,13 +45,13 @@ package
 			with(_graphic)
 			{
 				beginFill(color);
-				drawCircle(this._r,this._r,this._r);
+				drawCircle(0,0,this._r);
 				endFill();
 			}
 			this.addChild(sp);
 			this._name = new TextField;
-			this._name.x = (this._r * 2 - this._name.textWidth) >>1;
-			this._name.y = (this._r * 2 - this._name.textHeight) >>1;
+			this._name.x = (-this._name.textWidth) >>1;
+			this._name.y = (-this._name.textHeight) >>1;
 			this.addChild(this._name);
 		}
 		
@@ -51,29 +61,11 @@ package
 			with(_graphic)
 			{
 				beginFill(color);
-				drawCircle(this._r,this._r,this._r);
+				drawCircle(0,0,this._r);
 				endFill();
 			}
-			this._name.x = (this._r * 2 - this._name.textWidth) >>1;
-			this._name.y = (this._r * 2 - this._name.textHeight) >>1;
-		}
-		public function getBallBitMap():BitmapData
-		{
-			var s:flash.display.Sprite = new flash.display.Sprite();
-			// pick a color
-			var color:uint = Math.random() * 0xFFFFFF;
-			// set color fill
-			s.graphics.beginFill(color,1);
-			// radius
-			var radius:uint = this._r;
-			// draw circle with a specified radius
-			s.graphics.drawCircle(radius,radius,radius);
-			s.graphics.endFill();
-			// create a BitmapData buffer
-			var bmd:BitmapData = new BitmapData(radius * 2, radius * 2, true, color);
-			// draw the shape on the bitmap
-			bmd.draw(s);
-			return bmd
+			this._name.x = (-this._name.textWidth) >>1;
+			this._name.y = (-this._name.textHeight) >>1;
 		}
 		public function set radius(r:Number):void
 		{
@@ -98,6 +90,8 @@ package
 		public function set bname(n:String):void
 		{
 			this._name.text = n;
+			this._name.width = this._name.textWidth;
+			this._name.height = this._name.textHeight;
 		}
 		public function get bname():String
 		{
@@ -122,10 +116,6 @@ package
 			if(super.x == value)
 				return;
 			super.x = value;
-			var e:MoveEvent = new MoveEvent("moveing");
-			e.x = x;
-			e.y = y;
-			this.dispatchEvent(e);
 		}
 		
 		override public function set y(value:Number):void
@@ -133,60 +123,29 @@ package
 			if(super.y == value)
 				return;
 			super.y = value;
-			var e:MoveEvent = new MoveEvent("moveing");
-			e.x = x;
-			e.y = y;
-			this.dispatchEvent(e);
 		}
-		private var _runfromstate:String;
-		private var _runtween:TweenMax;
-		private var _runfinish:Function;
-		private var _onUpdate:Function;
+		
 		public function runTo(destPoint:Point,finish:Function = null):void
 		{
-
-			var intdestPoint:Point = new Point(int(destPoint.x),int(destPoint.y));
-			
-			var vecsrc:Vector2D = new Vector2D(x,y);
-			var vecdest:Vector2D = new Vector2D(intdestPoint.x,intdestPoint.y);
-			var distance:Number =  vecdest.dist(vecsrc);
-			var time:Number = distance / speed;
-			var tw:TweenMax = TweenMax.to(this,time,{x:intdestPoint.x,y:intdestPoint.y,onComplete:onTweenComplete,onUpdate:onTweenUpdate})
-			var npcins:Ball = this;
-			function onTweenUpdate():void
-			{
-				if(_onUpdate !=null)
-				{
-					_onUpdate(x,y);
-				}
-			}
-			function onTweenComplete():void
-			{
-				
-				if(_runfinish != null)
-					_runfinish(npcins);
-				_runfinish = null;
-			};
-			_runfinish = finish;
+			_mx = int(destPoint.x);
+			_my = int(destPoint.y);
 		}
-		public function runToUnUpdate(destPoint:Point,finish:Function = null):void
+		
+		public function update():void
 		{
-			var intdestPoint:Point = new Point(int(destPoint.x),int(destPoint.y));
-			
+			if(x == _mx && y == _my)
+			{
+				return;
+			}
 			var vecsrc:Vector2D = new Vector2D(x,y);
-			var vecdest:Vector2D = new Vector2D(intdestPoint.x,intdestPoint.y);
+			var vecdest:Vector2D = new Vector2D(_mx,_my);
 			var distance:Number =  vecdest.dist(vecsrc);
 			var time:Number = distance / speed;
-			var tw:TweenMax = TweenMax.to(this,time,{x:intdestPoint.x,y:intdestPoint.y,onComplete:onTweenComplete})
-			var npcins:Ball = this;
-			function onTweenComplete():void
-			{
-				
-				if(_runfinish != null)
-					_runfinish(npcins);
-				_runfinish = null;
-			};
-			_runfinish = finish;
+			
+			var detax:Number =  _mx-x/time;
+			var detay:Number = _my-y/time;
+			x += detax;
+			y += detay;
 		}
 		
 		public function get speed():Number
@@ -196,11 +155,6 @@ package
 		public function set speed(s:Number):void
 		{
 			_speed = s;
-		}
-		
-		public function set onUpdate(func:Function):void
-		{
-			this._onUpdate = func;
 		}
 		
 		public function toBigger(score:int):void
@@ -214,6 +168,17 @@ package
 		{
 			
 		}
+
+		public function get isplayer():Boolean
+		{
+			return _isplayer;
+		}
+
+		public function set isplayer(value:Boolean):void
+		{
+			_isplayer = value;
+		}
+
 
 	}
 }
