@@ -118,18 +118,19 @@ package
 		 */
 		private function _init():void
 		{
-			_mapLayer = new CJPlayerSceneLayer;
+			_mapLayer = CJPlayerSceneLayer.o();
+			
 			_sceneplayermanager = new CJScenePlayerManager(this.mapLayer);
 			
 			_bgLayer = new Sprite;
 
 			_mapLayer.addChildAt(_bgLayer,0);
 			
-			stage.addEventListener(flash.events.FocusEvent.FOCUS_OUT,function(e:Event):void
+			stage.addEventListener(Event.DEACTIVATE,function(e:Event):void
 			{
 				_render = false;
 			});
-			stage.addEventListener(flash.events.FocusEvent.FOCUS_IN,function(e:Event):void
+			stage.addEventListener(Event.ACTIVATE,function(e:Event):void
 			{
 				_render = true;
 			});
@@ -151,7 +152,6 @@ package
 				//				this.addChild(tipsaccount);
 			}
 			
-			_runRange = new Rectangle(200,200,this.stage.stageWidth - 200,this.stage.stageHeight - 200);
 		}
 		
 		/**

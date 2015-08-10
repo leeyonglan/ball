@@ -13,14 +13,19 @@ package
 	{
 		private static var sSortBuffer:Vector.<DisplayObject> = new <DisplayObject>[];
 		private var mChildren:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		private static var _ins:CJPlayerSceneLayer
 		public function CJPlayerSceneLayer()
 		{
 			super();
-			this.addEventListener("balladded",addListHandler);
-			this.addEventListener("ballremoved",removeListHandler);
 		}
-		
+		public static function o():CJPlayerSceneLayer
+		{
+			if(_ins == null)
+			{
+				_ins = new CJPlayerSceneLayer;
+			}
+			return _ins
+		}
 		public function sortPlayer():void
 		{
 			sortChildren(function(a:Ball,b:Ball):int
@@ -54,23 +59,18 @@ package
 			return mChildren;
 		}
 		
-		private function addListHandler(e:Event):void
+		public function addList(b:Ball):void
 		{
-			if(e.currentTarget is Ball && (e.currentTarget as Ball).isplayer)
-			{
-				mChildren[this.numChildren] = e.currentTarget as DisplayObject;	
-			}
+
+			mChildren[mChildren.length] = b;	
 		}
 		
-		private function removeListHandler(e:Event):void
+		public function removeList(b:Ball):void
 		{
-			if(e.currentTarget is Ball)
+			var indexm:int = mChildren.indexOf(b)
+			if(indexm != -1)
 			{
-				var indexm:int = mChildren.indexOf(e.currentTarget)
-				if(indexm != -1)
-				{
-					delete mChildren[indexm]
-				}
+				delete mChildren[indexm]
 			}
 		}
 		

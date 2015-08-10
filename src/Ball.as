@@ -6,6 +6,8 @@ package
 	import flash.geom.Point;
 	import flash.text.TextField;
 	
+	import gs.TweenMax;
+	
 	public class Ball extends Sprite implements Ienterframe
 	{
 		private var _r:Number = 10;
@@ -21,14 +23,6 @@ package
 		public function Ball(id:String)
 		{
 			super();
-			this.addEventListener(Event.ADDED,function(e:Event):void
-			{
-				dispatchEvent(new Event("balladded",true));
-			});
-			this.addEventListener(Event.REMOVED,function(e:Event):void
-			{
-				dispatchEvent(new Event("ballremoved",true));
-			});
 			_id = id;
 			initialize();
 			this.cacheAsBitmap = true;
@@ -127,25 +121,30 @@ package
 		
 		public function runTo(destPoint:Point,finish:Function = null):void
 		{
-			_mx = int(destPoint.x);
-			_my = int(destPoint.y);
+			x = destPoint.x;
+			y = destPoint.y;
+//			var vecsrc:Vector2D = new Vector2D(x,y);
+//			var vecdest:Vector2D = new Vector2D(_mx,_my);
+//			var distance:Number =  vecdest.dist(vecsrc);
+//			var time:Number = distance / speed;
+//			TweenMax.to(this,time,{x:destPoint.x,y:destPoint.y});
 		}
 		
 		public function update():void
 		{
-			if(x == _mx && y == _my)
-			{
-				return;
-			}
-			var vecsrc:Vector2D = new Vector2D(x,y);
-			var vecdest:Vector2D = new Vector2D(_mx,_my);
-			var distance:Number =  vecdest.dist(vecsrc);
-			var time:Number = distance / speed;
-			
-			var detax:Number =  _mx-x/time;
-			var detay:Number = _my-y/time;
-			x += detax;
-			y += detay;
+//			if((x == _mx && y == _my) || isNaN(_mx) || isNaN(_my))
+//			{
+//				return;
+//			}
+//			var vecsrc:Vector2D = new Vector2D(x,y);
+//			var vecdest:Vector2D = new Vector2D(_mx,_my);
+//			var distance:Number =  vecdest.dist(vecsrc);
+//			var time:Number = distance / speed;
+//			
+//			var detax:Number =  _mx-x/time;
+//			var detay:Number = _my-y/time;
+//			x += detax;
+//			y += detay;
 		}
 		
 		public function get speed():Number
@@ -177,6 +176,18 @@ package
 		public function set isplayer(value:Boolean):void
 		{
 			_isplayer = value;
+			if(_isplayer)
+			{
+				var _ins:Ball = this
+				this.addEventListener(Event.ADDED_TO_STAGE,function(e:Event):void
+				{
+					CJPlayerSceneLayer.o().addList(_ins);
+				});
+				this.addEventListener(Event.REMOVED_FROM_STAGE,function(e:Event):void
+				{
+					CJPlayerSceneLayer.o().removeList(_ins);
+				});
+			}
 		}
 
 
