@@ -5,6 +5,7 @@ package
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
@@ -20,7 +21,7 @@ package
 	 * @author yongjun
 	 * 
 	 */
-	public class CJMainSceneLayer extends Sprite implements Ienterframe
+	public class CJMainSceneLayer extends Sprite
 	{
 		
 		protected var _mapLayer:CJPlayerSceneLayer = null;
@@ -63,11 +64,11 @@ package
 		private function _initEventListener():void
 		{
 			stage.addEventListener(Event.ENTER_FRAME,enterFameHandler);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE,mouseMove);
 			SocketManager.o.addEventListener(CJSocketEvent.SocketEventData,_onSocketPlayerRank);
 		}
 		private function enterFameHandler(e:Event):void
 		{
-			this.update();
 			var list:Vector.<DisplayObject> = this._mapLayer.getmChildren();
 			for(var i:String in list)
 			{
@@ -215,7 +216,7 @@ package
 			_role.y = originalPos.y
 			_role.radius = balldata.currentexp;
 			_role.score = int(balldata.currentexp);
-			
+			_role.onUpdate = tweenMapLayer;
 			//初始化其它玩家
 			_initOtherPlayers();
 				
@@ -223,16 +224,11 @@ package
 		
 		private function tweenMapLayer(detax:Number,detay:Number):void
 		{
-			var detaPoint:Point = this.getLayerDetaPoint(this,detax,detay);
-			detax = detaPoint.x;
-			detay = detaPoint.y;
 			this._mapLayer.x +=detax;
 			this._mapLayer.y +=detay;
-			
-//			var distance:Number = Math.sqrt(detax*detax + detay*detay)
-//			var time:Number = distance/1000;
-//			TweenMax.to(this,time,{x:String(detax),y:String(detay),onComplete:null})
+			checkCollision(this._role.x,this._role.y)
 		}
+		
 		private function getLayerDetaPoint(layer:Sprite,detax:Number,detay:Number):Point
 		{
 			if(layer.x + detax >=0)
@@ -258,11 +254,6 @@ package
 		 */
 		private function checkCollision(cx:Number,cy:Number):void
 		{
-			var param:Dictionary = new Dictionary;
-			param['rid'] = _role.id;
-			param['x'] = cx;
-			param['y'] = cy;
-			SocketManager.o.callunlock2("r_sync.move",param);
 			var grid:int = CJPlayerDataManager.o().update(_role.id,cx,cy)
 			var rangGrids:Array =  CJPlayerDataManager.o().getRangeGrids(grid,_role.radius);
 			var checkGrids:Vector.<Cell> = CJPlayerDataManager.o().getAllInGrids(rangGrids);
@@ -305,39 +296,13 @@ package
 			}
 		}
 		private var speed:Number = 5;
-		public function update():void
+		public function mouseMove(e:MouseEvent):void
 		{
-			if(!_render)return;
-			var destX:Number = -(stage.mouseX - (this.stage.stageWidth>>1));
-			var destY:Number = -(stage.mouseY - (this.stage.stageHeight>>1));
-			if(destX == 0 && destY == 0)
-			{
-				return;
-			}
-			var distance:Number = Math.sqrt(destX*destX + destY*destY)
-			var costFrame:Number = distance/speed;
-			
-			
-			var detax:Number =  destX/costFrame;
-			var detay:Number = destY/costFrame;
-			
-			var lastx:Number = this._mapLayer.x + detax;
-			var lMaxx:Number = Math.min(lastx,0)
-			var lMinx:Number = Math.max(lMaxx,-(10000 - this.stage.stageWidth))
-			detax = int(lMinx - this._mapLayer.x);
-			this._role.x -= detax;   //211410.35
-			this._mapLayer.x += detax;//-201908.3
-			
-			var lasty:Number = this._mapLayer.y + detay;
-			var lMaxy:Number = Math.min(lasty,0)
-			var lMiny:Number = Math.max(lMaxy,-(10000 - this.stage.stageHeight))
-			detay = int(lMiny - this._mapLayer.y);
-			this._role.y -= detay;
-			this._mapLayer.y += detay;
-			
-			checkCollision(this._role.x,this._role.y)
+			var destX:Number = -(e.stageX - (this.stage.stageWidth>>1));
+			var destY:Number = -(e.stageY - (this.stage.stageHeight>>1));
+			this._role.runTo(new Point(destX,destY));
 		}
-
+		
 		protected function _movefinish(role:Ball):void
 		{
 			_role.speed = 50;

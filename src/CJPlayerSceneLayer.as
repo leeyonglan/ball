@@ -2,7 +2,6 @@ package
 {
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
-	import flash.events.Event;
 	
 	/**
 	 * 玩家场景控制类,主要针对玩家排序 

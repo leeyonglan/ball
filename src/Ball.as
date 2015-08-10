@@ -5,8 +5,11 @@ package
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.text.TextField;
+	import flash.utils.Dictionary;
 	
 	import gs.TweenMax;
+	
+	import netServer.SocketManager;
 	
 	public class Ball extends Sprite implements Ienterframe
 	{
@@ -118,33 +121,65 @@ package
 				return;
 			super.y = value;
 		}
-		
+		private var _detax:Number
+		private var _detay:Number
+		public function setDetaPos(x:Number,y:Number):void
+		{
+			_detax = x;
+			_detay = y;
+		}
 		public function runTo(destPoint:Point,finish:Function = null):void
 		{
-			x = destPoint.x;
-			y = destPoint.y;
-//			var vecsrc:Vector2D = new Vector2D(x,y);
-//			var vecdest:Vector2D = new Vector2D(_mx,_my);
-//			var distance:Number =  vecdest.dist(vecsrc);
-//			var time:Number = distance / speed;
-//			TweenMax.to(this,time,{x:destPoint.x,y:destPoint.y});
+			
+			_mx = destPoint.x;
+			_my = destPoint.y;
+			if(_mx == 0 && _my == 0)
+			{
+				_detax = 0
+				_detay = 0;
+				return;
+			}
+			var distance:Number = Math.sqrt(_mx*_mx + _my*_my)
+			var costFrame:Number = distance/speed;
+			
+			var detax:Number =  _mx/costFrame;
+			var detay:Number = _my/costFrame;
+			
+			var lastx:Number = parent.x + detax;
+			var lMaxx:Number = Math.min(lastx,0)
+			var lMinx:Number = Math.max(lMaxx,-(10000 - this.stage.stageWidth))
+			_detax = int(lMinx - parent.x);
+			
+			var lasty:Number = parent.y + detay;
+			var lMaxy:Number = Math.min(lasty,0)
+			var lMiny:Number = Math.max(lMaxy,-(10000 - this.stage.stageHeight))
+			_detay = int(lMiny - parent.y);
+			var param:Dictionary = new Dictionary;
+			param['rid'] = id;
+			param['x'] = _detax;
+			param['y'] = _detay;
+			SocketManager.o.callunlock2("r_sync.move",param);
 		}
 		
+		private var _onUpdate:Function = null
+		public function set onUpdate(func:Function):void
+		{
+			_onUpdate = func
+		}
 		public function update():void
 		{
-//			if((x == _mx && y == _my) || isNaN(_mx) || isNaN(_my))
-//			{
-//				return;
-//			}
-//			var vecsrc:Vector2D = new Vector2D(x,y);
-//			var vecdest:Vector2D = new Vector2D(_mx,_my);
-//			var distance:Number =  vecdest.dist(vecsrc);
-//			var time:Number = distance / speed;
-//			
-//			var detax:Number =  _mx-x/time;
-//			var detay:Number = _my-y/time;
-//			x += detax;
-//			y += detay;
+			if(!isNaN(_detax))
+			{
+				x -= _detax;
+			}
+			if(!isNaN(_detay))
+			{
+				y -= _detay;
+			}
+			if(_onUpdate != null)
+			{
+				_onUpdate(_detax,_detay)
+			}
 		}
 		
 		public function get speed():Number

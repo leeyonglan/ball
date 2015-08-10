@@ -27,7 +27,7 @@ package
 		
 		public function game()
 		{
-			stage.frameRate = 30;
+			stage.frameRate = 24;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT
 			_initServer();
