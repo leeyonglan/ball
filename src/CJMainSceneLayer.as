@@ -64,18 +64,14 @@ package
 		private function _initEventListener():void
 		{
 			stage.addEventListener(Event.ENTER_FRAME,enterFameHandler);
-			stage.addEventListener(MouseEvent.MOUSE_MOVE,mouseMove);
 			SocketManager.o.addEventListener(CJSocketEvent.SocketEventData,_onSocketPlayerRank);
 		}
 		private function enterFameHandler(e:Event):void
 		{
+			this.update();
 			var list:Vector.<DisplayObject> = this._mapLayer.getmChildren();
 			for(var i:String in list)
 			{
-				if(list[i] == this._role)
-				{
-					continue;
-				}
 				(list[i] as Ball).update();
 			}
 		}
@@ -224,6 +220,10 @@ package
 		
 		private function tweenMapLayer(detax:Number,detay:Number):void
 		{
+			if(isNaN(detax) && isNaN(detay))
+			{
+				return;
+			}
 			this._mapLayer.x +=detax;
 			this._mapLayer.y +=detay;
 			checkCollision(this._role.x,this._role.y)
@@ -295,11 +295,12 @@ package
 				}
 			}
 		}
+		
 		private var speed:Number = 5;
-		public function mouseMove(e:MouseEvent):void
+		public function update():void
 		{
-			var destX:Number = -(e.stageX - (this.stage.stageWidth>>1));
-			var destY:Number = -(e.stageY - (this.stage.stageHeight>>1));
+			var destX:Number = -(stage.mouseX - (this.stage.stageWidth>>1));
+			var destY:Number = -(stage.mouseX - (this.stage.stageHeight>>1));
 			this._role.runTo(new Point(destX,destY));
 		}
 		
