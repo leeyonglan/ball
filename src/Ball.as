@@ -17,7 +17,7 @@ package
 		private var _id:String;
 		private var _name:TextField;
 		private var _nameText:String;
-		private var _speed:Number = 50;
+		private var _speed:Number = 10;
 		private var _score:int = 0;
 		private var _graphic:Graphics;
 		private var _mx:Number;
@@ -121,8 +121,9 @@ package
 				return;
 			super.y = value;
 		}
-		private var _detax:Number
-		private var _detay:Number
+		private var _detax:Number = 0;
+		private var _detay:Number = 0;
+		private var _currsync:int = 0;
 		public function setDetaPos(x:Number,y:Number):void
 		{
 			_detax = x;
@@ -142,18 +143,23 @@ package
 			var distance:Number = Math.sqrt(_mx*_mx + _my*_my)
 			var costFrame:Number = distance/speed;
 			
-			var detax:Number =  _mx/costFrame;
-			var detay:Number = _my/costFrame;
+			_detax =  _mx/costFrame;
+			_detay = _my/costFrame;
 			
-			var lastx:Number = parent.x + detax;
-			var lMaxx:Number = Math.min(lastx,0)
-			var lMinx:Number = Math.max(lMaxx,-(10000 - this.stage.stageWidth))
-			_detax = int(lMinx - parent.x);
-			
-			var lasty:Number = parent.y + detay;
-			var lMaxy:Number = Math.min(lasty,0)
-			var lMiny:Number = Math.max(lMaxy,-(10000 - this.stage.stageHeight))
-			_detay = int(lMiny - parent.y);
+//			var lastx:Number = parent.x + detax;
+//			var lMaxx:Number = Math.min(lastx,0)
+//			var lMinx:Number = Math.max(lMaxx,-(10000 - this.stage.stageWidth))
+//			_detax = int(lMinx - parent.x);
+//			
+//			var lasty:Number = parent.y + detay;
+//			var lMaxy:Number = Math.min(lasty,0)
+//			var lMiny:Number = Math.max(lMaxy,-(10000 - this.stage.stageHeight))
+//			_detay = int(lMiny - parent.y);
+			if(_detax == 0 && _detay == 0)
+			{
+				return;
+			}
+
 			var param:Dictionary = new Dictionary;
 			param['rid'] = id;
 			param['x'] = _detax;
@@ -168,11 +174,19 @@ package
 		}
 		public function update():void
 		{
-			if(!isNaN(_detax))
+			if((parent.x + _detax)>0 || (parent.x + _detax) < -(10000 - this.stage.stageWidth))
+			{
+				
+			}
+			else
 			{
 				x -= _detax;
 			}
-			if(!isNaN(_detay))
+			if((parent.y + _detay)>0 || (parent.y + _detay) < -(10000 - this.stage.stageHeight))
+			{
+				
+			}
+			else
 			{
 				y -= _detay;
 			}

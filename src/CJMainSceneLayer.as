@@ -44,7 +44,7 @@ package
 		 * 初始化主角 
 		 */		
 		protected var _role:Ball;
-		
+		protected var _mouseMoving = false;
 		public function CJMainSceneLayer()
 		{
 			super();
@@ -64,6 +64,8 @@ package
 		private function _initEventListener():void
 		{
 			stage.addEventListener(Event.ENTER_FRAME,enterFameHandler);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE,moveHandler);
+			stage.addEventListener(MouseEvent.MOUSE_OUT,outHandler);
 			SocketManager.o.addEventListener(CJSocketEvent.SocketEventData,_onSocketPlayerRank);
 		}
 		private function enterFameHandler(e:Event):void
@@ -76,6 +78,14 @@ package
 			}
 		}
 		
+		private function moveHandler(e:MouseEvent):void
+		{
+			_mouseMoving = true;
+		}
+		private function outHandler(e:MouseEvent):void
+		{
+			
+		}
 		private function _initGrid():void
 		{
 			for(var g:int = 0;g<4;g++)
@@ -220,12 +230,22 @@ package
 		
 		private function tweenMapLayer(detax:Number,detay:Number):void
 		{
-			if(isNaN(detax) && isNaN(detay))
+			if((this._mapLayer.x + detax)>0 || (this._mapLayer.x + detax) < -(10000 - this.stage.stageWidth))
 			{
-				return;
+				
 			}
-			this._mapLayer.x +=detax;
-			this._mapLayer.y +=detay;
+			else
+			{
+				this._mapLayer.x +=detax;
+			}
+			if((this._mapLayer.y + detay)>0 || (this._mapLayer.y + detay) < -(10000 - this.stage.stageHeight))
+			{
+				
+			}
+			else
+			{
+				this._mapLayer.y +=detay;
+			}
 			checkCollision(this._role.x,this._role.y)
 		}
 		
@@ -299,9 +319,13 @@ package
 		private var speed:Number = 5;
 		public function update():void
 		{
-			var destX:Number = -(stage.mouseX - (this.stage.stageWidth>>1));
-			var destY:Number = -(stage.mouseX - (this.stage.stageHeight>>1));
-			this._role.runTo(new Point(destX,destY));
+			if(_mouseMoving == true)
+			{
+				_mouseMoving = false;
+				var destX:Number = -(stage.mouseX - (this.stage.stageWidth>>1));
+				var destY:Number = -(stage.mouseY - (this.stage.stageHeight>>1));
+				this._role.runTo(new Point(destX,destY));
+			}
 		}
 		
 		protected function _movefinish(role:Ball):void
